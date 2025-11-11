@@ -1,0 +1,586 @@
+/*Colores*/
+:root {
+    --color-primario: #16A34A; /* Verde */
+    --color-secundario: #CECE07; /* Amarillo */
+    --color-gris-claro: #F3F4F6;
+    --color-gris-medio: #D1D5DB;
+    --color-gris-oscuro: #5E6166; /* Gris Oscuro (Celda no activa) */
+    --color-rojo: #DC2626; /* Rojo */
+    --color-blanco: #FFFFFF;
+    --sombra-suave: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+}
+
+/*mobile first */
+
+
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--color-gris-claro);
+    color: #333;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+/*header*/
+header {
+    display: flex;
+    background-color: var(--color-primario);
+    align-items: center;
+    padding: 10px 20px;
+    color: var(--color-blanco);
+    box-shadow: var(--sombra-suave);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.logo {
+    width: 140px;
+    height: auto;
+    max-height: 130px;
+    order: 1;
+}
+
+h1 {
+    font-size: 1.6em;
+    margin: 0 auto;
+    text-align: center;
+    flex-grow: 1;
+    font-weight: 700;
+    letter-spacing: 2px;
+    order: 2;
+}
+
+.imagenes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: auto;
+    order: 3;
+    justify-content: flex-end;
+}
+
+.imagenes img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.imagenes img:hover {
+    transform: scale(1.1);
+}
+
+/*main*/
+main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 10px;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
+#estado-carga {
+    margin-bottom: 5px; 
+    font-size: 1em;
+    padding: 5px 15px;
+    border-radius: 5px;
+}
+
+/* Estilo del contador global */
+#tiempo-global { 
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--color-gris-oscuro);
+    padding: 5px 10px;
+    background-color: var(--color-gris-medio);
+    border-radius: 5px;
+    box-shadow: var(--sombra-suave);
+}
+
+
+#contenedor-juego {
+    display: block;
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+#contenedor-superior {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+#tablero {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 10px 0;
+    width: 100%;
+}
+
+/* --- ESTILOS DE LA BARRA DE PROGRESO --- */
+
+#barra-tiempo-container {
+    width: 100%;
+    height: 15px;
+    background-color: var(--color-gris-medio);
+    border-radius: 8px;
+    margin-top: 15px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+#barra-tiempo {
+    height: 100%;
+    width: 100%; /* Empieza al 100% */
+    transition: width 1s linear, background-color 0.5s;
+}
+
+.barra-verde {
+    background-color: var(--color-primario);
+}
+
+.barra-amarilla {
+    background-color: var(--color-secundario);
+}
+
+.barra-roja {
+    background-color: var(--color-rojo);
+}
+
+/* --- FIN ESTILOS BARRA DE PROGRESO --- */
+
+
+.fila {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.celda {
+    width: 14vw;
+    height: 14vw;
+    max-width: 50px;
+    max-height: 50px;
+    background-color: var(--color-gris-oscuro); /* Fondo de la celda no activa */
+    border: 2px solid var(--color-gris-medio);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.celda.activa {
+    border-color: #333;
+    background-color: var(--color-blanco); /* Fondo Blanco para celdas activas/escribiendo */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+/* ESTILO DE LA LETRA DE TEXTO - Letras blancas por defecto para celdas inactivas (fondo gris oscuro) */
+.letra-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90%; 
+    height: 90%; 
+    font-size: 1.5em; /* Tamaño de la letra */
+    font-weight: bold;
+    color: var(--color-blanco); /* Letra blanca por defecto */
+}
+
+/* Asegurar que las letras sean oscuras en celdas activas (fondo blanco) para alto contraste */
+.celda.activa .letra-display {
+    color: #000; /* Negro puro para máximo contraste */
+}
+
+
+/* ESTILOS DE ESTADO (VALIDACIÓN) */
+
+/* VERDE: Acierto */
+.celda.estado-V {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+}
+.celda.estado-V .letra-display {
+    color: var(--color-blanco);
+    background-color: var(--color-primario);
+    border-radius: 50%;
+}
+
+/* AMARILLO: Posición incorrecta */
+.celda.estado-A {
+    background-color: var(--color-secundario);
+    border-color: var(--color-secundario);
+}
+.celda.estado-A .letra-display {
+    color: var(--color-blanco);
+    background-color: var(--color-secundario);
+    border-radius: 50%;
+}
+
+/* ROJO: No existe en la palabra */
+.celda.estado-R {
+    background-color: var(--color-rojo);
+    border-color: var(--color-rojo);
+}
+.celda.estado-R .letra-display {
+    color: var(--color-blanco);
+    background-color: var(--color-rojo);
+    border-radius: 50%;
+}
+
+/* Nuevo estilo para celdas fallidas por diccionario (todas rojas) */
+.celda.estado-R-diccionario {
+    background-color: var(--color-rojo); /* Asegurar color rojo si no hay variable */
+    border-color: var(--color-rojo);
+}
+/* Asegura que la letra en la celda de diccionario perdido también sea blanca */
+.celda.estado-R-diccionario .letra-display {
+    color: var(--color-blanco);
+    background-color: var(--color-rojo);
+    border-radius: 50%;
+}
+
+
+/* PERDIDO/TIEMPO AGOTADO */
+.celda.estado-perdido {
+    background-color: var(--color-gris-oscuro); 
+    border-color: var(--color-gris-oscuro);
+    opacity: 0.7; 
+}
+.celda.estado-perdido .letra-display {
+    color: var(--color-blanco);
+    background: none;
+    border-radius: 0;
+}
+
+
+#contenedor-teclado {
+    width: 100%;
+    max-width: 500px;
+    margin-top: 20px;
+    align-self: center;
+}
+
+#teclado-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.fila-teclado {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    justify-content: center;
+}
+
+.tecla {
+    flex: 1;
+    background-color: var(--color-gris-medio);
+    color: #333;
+    font-size: 0.9em;
+    font-weight: bold;
+    height: 40px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.1s, transform 0.1s;
+    padding: 0;
+    line-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+
+.tecla:hover {
+    background-color: #C3C7CD;
+}
+
+.tecla:active {
+    transform: translateY(1px);
+}
+
+.tecla.especial {
+    flex: 1.5;
+    font-size: 0.8em;
+    color: var(--color-blanco);
+}
+
+.tecla.backspace-key {
+    background-color: var(--color-gris-medio);
+    flex: 1.2;
+}
+
+.tecla.backspace-key:hover {
+    background-color: #C3C7CD;
+}
+
+.tecla.backspace-key img {
+    height: 60%;
+    width: auto;
+    object-fit: contain;
+}
+
+.tecla.enter-key {
+    background-color: var(--color-primario);
+    color: var(--color-blanco);
+    flex: 1.8;
+}
+
+.tecla.enter-key:hover {
+    background-color: #128B41;
+}
+
+.tecla.estado-V {
+    background-color: var(--color-primario);
+    color: var(--color-blanco);
+}
+
+.tecla.estado-A {
+    background-color: var(--color-secundario);
+    color: var(--color-blanco);
+}
+
+.tecla.estado-R {
+    background-color: var(--color-gris-oscuro);
+    color: var(--color-blanco);
+}
+
+/*footer*/
+footer {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-primario);
+    color: var(--color-blanco);
+    min-height: 50px;
+    padding: 5px 20px;
+    margin-top: auto;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.redes-izq,
+.redes-der {
+    display: flex;
+    align-items: center;
+    width: 30%;
+    gap: 10px;
+}
+
+.redes-der {
+    justify-content: flex-end;
+}
+
+.info-derechos {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 auto;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+footer img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin: 0;
+}
+
+footer img:hover {
+    transform: scale(1.1);
+}
+
+.info-derechos p {
+    margin: 0;
+    font-size: 0.7em;
+}
+
+/*media queries*/
+@media (min-width: 768px) {
+
+    main {
+        padding: 30px 30px;
+        max-width: 1000px;
+        width: 90%;
+        margin: 0 auto;
+        background-color: var(--color-blanco);
+        border-radius: 10px;
+        box-shadow: var(--sombra-suave);
+    }
+    
+    #contenedor-juego {
+        max-width: 500px;
+    }
+
+    .celda {
+        width: 65px;
+        height: 65px;
+        max-width: none;
+        max-height: none;
+    }
+    
+    .letra-display {
+        font-size: 2em;
+    }
+
+    #contenedor-teclado {
+        margin-top: 25px;
+        max-width: 650px;
+    }
+
+    .tecla {
+        height: 45px;
+        font-size: 1em;
+    }
+
+    footer {
+        min-height: 70px;
+        padding: 10px 20px;
+    }
+
+    .info-derechos p {
+        font-size: 0.9em;
+    }
+
+    footer img {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* --- ESTILOS DEL MODAL DE BIENVENIDA --- */
+
+    .modal {
+        /* Oculto por defecto, se muestra con JS */
+        display: none; 
+        position: fixed; /* Mantiene la posición aunque se haga scroll */
+        z-index: 1000; /* Asegura que esté por encima de todo */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto; /* Permite scroll si el contenido es muy grande */
+        background-color: rgba(0,0,0,0.6); /* Fondo semi-transparente oscuro */
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .modal-contenido {
+        background-color: var(--color-blanco);
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-contenido h2 {
+        color: var(--color-primario);
+        margin-top: 0;
+        font-size: 1.5em;
+        border-bottom: 2px solid var(--color-gris-medio);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .modal-contenido p, .modal-contenido ul {
+        text-align: left;
+        color: #444;
+        font-size: 1em;
+        line-height: 1.5;
+    }
+
+    .modal-contenido ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin-bottom: 20px;
+    }
+
+    .modal-contenido li {
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+    }
+
+    /* Estilos para los ejemplos de colores en el pop-up */
+    .estado-V-ejemplo {
+        font-weight: bold;
+        color: var(--color-primario);
+    }
+
+    .estado-A-ejemplo {
+        font-weight: bold;
+        color: var(--color-secundario);
+    }
+
+    .estado-R-ejemplo {
+        font-weight: bold;
+        color: var(--color-rojo);
+    }
+
+    #boton-iniciar-juego {
+        background-color: var(--color-primario);
+        color: var(--color-blanco);
+        border: none;
+        padding: 10px 20px;
+        font-size: 1.1em;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+    #boton-iniciar-juego:hover {
+        background-color: #128B41;
+        transform: scale(1.02);
+    }
+
+    /* Fin Estilos Modal */
+
+    /* Estilos de ocultación inicial para el juego */
+    #contenedor-juego, #contenedor-teclado {
+        /* Lo usamos para que el JS pueda ocultar esto mientras carga la palabra */
+        display: block; 
+    }
+
+    /* Media Query para pantallas grandes */
+    @media (min-width: 768px) {
+        .modal-contenido {
+            max-width: 550px;
+            padding: 40px;
+        }
+    }
+
+
+
+}

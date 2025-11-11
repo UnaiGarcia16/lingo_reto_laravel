@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* -- Contenedor Principal -- */
+.ranking-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 25px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* -- Título -- */
+.ranking-container h1 {
+    text-align: center;
+    color: #1a202c;
+    font-size: 2.2rem;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+/* -- Tabla -- */
+.ranking {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 1rem;
+}
+
+/* -- Encabezados (Header) -- */
+.ranking thead th {
+    background-color: #4f46e5;
+    color: white;
+    padding: 15px 10px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.ranking thead tr th:first-child { border-top-left-radius: 8px; }
+.ranking thead tr th:last-child { border-top-right-radius: 8px; }
+
+/* -- Cuerpo de la Tabla (Body) -- */
+.ranking tbody tr {
+    transition: background-color 0.3s ease;
+}
+.ranking tbody tr:nth-child(even) {
+    background-color: #f7f7f7;
+}
+.ranking tbody tr:hover {
+    background-color: #eef2ff;
+    transform: scale(1.005);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.ranking tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333333;
+}
+
+/* -- Estilos Especiales para el Top 3 (Medallas) -- */
+.top-three {
+    font-weight: bold;
+}
+.top-three td {
+    border-color: #4f46e5 !important;
+}
+
+.ranking tbody tr:nth-child(1) .pos {
+    background-color: gold;
+    color: #333;
+    border-radius: 4px;
+    font-size: 1.1em;
+}
+.ranking tbody tr:nth-child(2) .pos {
+    background-color: silver;
+    color: #333;
+    border-radius: 4px;
+    font-size: 1.1em;
+}
+.ranking tbody tr:nth-child(3) .pos {
+    background-color: #cd7f32;
+    color: white;
+    border-radius: 4px;
+    font-size: 1.1em;
+}
+
+/* Centrar celdas de números */
+.ranking tbody td:nth-child(1),
+.ranking tbody td:nth-child(2),
+.ranking tbody td:last-child {
+    text-align: center;
+}
