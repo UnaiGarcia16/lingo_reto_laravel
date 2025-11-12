@@ -1,7 +1,6 @@
 🧩 Lingo Reto Laravel
 
 Este proyecto es una versión del juego Lingo, desarrollada con Laravel y configurada para ejecutarse fácilmente usando Docker.
-Forma parte de un reto o práctica para aprender a usar Laravel junto con contenedores.
 
 🚀 Cómo ejecutar el proyecto
 
