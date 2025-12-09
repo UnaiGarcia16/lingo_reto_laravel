@@ -1,18 +1,25 @@
-/*Colores*/
+/* Reset basico: box-sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Variables de color y sombra */
 :root {
-    --color-primario: #16A34A; /* Verde */
+    --color-primario: #16A34A; /* Verde chulo */
     --color-secundario: #CECE07; /* Amarillo */
     --color-gris-claro: #F3F4F6;
     --color-gris-medio: #D1D5DB;
-    --color-gris-oscuro: #5E6166; /* Gris Oscuro (Celda no activa) */
+    --color-gris-oscuro: #5E6166; /* Gris de celda inactiva */
     --color-rojo: #DC2626; /* Rojo */
     --color-blanco: #FFFFFF;
     --sombra-suave: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
 }
 
-/*mobile first */
+/* Mobile First: base */
 
-
+html {
+    overflow-x: hidden; 
+}
 
 body {
     margin: 0;
@@ -23,10 +30,9 @@ body {
     background-color: var(--color-gris-claro);
     color: #333;
     overflow-x: hidden;
-    overflow-y: hidden;
 }
 
-/*header*/
+/* Estilos de la cabecera */
 header {
     display: flex;
     background-color: var(--color-primario);
@@ -36,17 +42,18 @@ header {
     box-shadow: var(--sombra-suave);
     width: 100%;
     box-sizing: border-box;
+    min-width: 0; 
 }
 
 .logo {
-    width: 140px;
+    width: 100px;
     height: auto;
     max-height: 130px;
     order: 1;
 }
 
 h1 {
-    font-size: 1.6em;
+    font-size: 1.4em;
     margin: 0 auto;
     text-align: center;
     flex-grow: 1;
@@ -64,18 +71,21 @@ h1 {
     justify-content: flex-end;
 }
 
-.imagenes img {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
+.imagenes a {
+    color: var(--color-blanco);
+    text-decoration: none;
     transition: transform 0.2s;
 }
 
-.imagenes img:hover {
+.imagenes a:hover {
     transform: scale(1.1);
 }
 
-/*main*/
+.imagenes i {
+    font-size: 1.8em;
+}
+
+/* Estilos del contenido principal */
 main {
     flex-grow: 1;
     display: flex;
@@ -84,7 +94,7 @@ main {
     padding: 15px 10px;
     width: 100%;
     box-sizing: border-box;
-    justify-content: center;
+    justify-content: flex-start; /* Empieza arriba */
 }
 
 #estado-carga {
@@ -94,7 +104,7 @@ main {
     border-radius: 5px;
 }
 
-/* Estilo del contador global */
+/* Contador de tiempo */
 #tiempo-global { 
     margin-bottom: 15px;
     font-size: 1.2em;
@@ -129,7 +139,7 @@ main {
     width: 100%;
 }
 
-/* --- ESTILOS DE LA BARRA DE PROGRESO --- */
+/* BARRA DE TIEMPO */
 
 #barra-tiempo-container {
     width: 100%;
@@ -143,7 +153,7 @@ main {
 
 #barra-tiempo {
     height: 100%;
-    width: 100%; /* Empieza al 100% */
+    width: 100%; /* Empieza full */
     transition: width 1s linear, background-color 0.5s;
 }
 
@@ -159,7 +169,7 @@ main {
     background-color: var(--color-rojo);
 }
 
-/* --- FIN ESTILOS BARRA DE PROGRESO --- */
+/* FIN BARRA DE TIEMPO */
 
 
 .fila {
@@ -169,11 +179,13 @@ main {
 }
 
 .celda {
-    width: 14vw;
-    height: 14vw;
+    /* Tamano fijo para movil */
+    width: 50px;
+    height: 50px;
     max-width: 50px;
     max-height: 50px;
-    background-color: var(--color-gris-oscuro); /* Fondo de la celda no activa */
+    
+    background-color: var(--color-gris-oscuro); /* Fondo no activa */
     border: 2px solid var(--color-gris-medio);
     border-radius: 8px;
     display: flex;
@@ -186,31 +198,31 @@ main {
 
 .celda.activa {
     border-color: #333;
-    background-color: var(--color-blanco); /* Fondo Blanco para celdas activas/escribiendo */
+    background-color: var(--color-blanco); /* Fondo Blanco activa */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
-/* ESTILO DE LA LETRA DE TEXTO - Letras blancas por defecto para celdas inactivas (fondo gris oscuro) */
+/* Estilo de la letra */
 .letra-display {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 90%; 
     height: 90%; 
-    font-size: 1.5em; /* Tamaño de la letra */
+    font-size: 1.5em; 
     font-weight: bold;
     color: var(--color-blanco); /* Letra blanca por defecto */
 }
 
-/* Asegurar que las letras sean oscuras en celdas activas (fondo blanco) para alto contraste */
+/* Letra oscura en celdas activas */
 .celda.activa .letra-display {
-    color: #000; /* Negro puro para máximo contraste */
+    color: #000; 
 }
 
 
-/* ESTILOS DE ESTADO (VALIDACIÓN) */
+/* ESTILOS DE VALIDACIÓN */
 
-/* VERDE: Acierto */
+/* VERDE: Correcto */
 .celda.estado-V {
     background-color: var(--color-primario);
     border-color: var(--color-primario);
@@ -221,7 +233,7 @@ main {
     border-radius: 50%;
 }
 
-/* AMARILLO: Posición incorrecta */
+/* AMARILLO: Posicion mal */
 .celda.estado-A {
     background-color: var(--color-secundario);
     border-color: var(--color-secundario);
@@ -232,7 +244,7 @@ main {
     border-radius: 50%;
 }
 
-/* ROJO: No existe en la palabra */
+/* ROJO: No existe */
 .celda.estado-R {
     background-color: var(--color-rojo);
     border-color: var(--color-rojo);
@@ -243,12 +255,12 @@ main {
     border-radius: 50%;
 }
 
-/* Nuevo estilo para celdas fallidas por diccionario (todas rojas) */
+/* Palabra no valida (diccionario) */
 .celda.estado-R-diccionario {
-    background-color: var(--color-rojo); /* Asegurar color rojo si no hay variable */
+    background-color: var(--color-rojo);
     border-color: var(--color-rojo);
 }
-/* Asegura que la letra en la celda de diccionario perdido también sea blanca */
+/* Letra para palabra no valida */
 .celda.estado-R-diccionario .letra-display {
     color: var(--color-blanco);
     background-color: var(--color-rojo);
@@ -256,7 +268,7 @@ main {
 }
 
 
-/* PERDIDO/TIEMPO AGOTADO */
+/* PERDIDO / TIEMPO */
 .celda.estado-perdido {
     background-color: var(--color-gris-oscuro); 
     border-color: var(--color-gris-oscuro);
@@ -268,10 +280,11 @@ main {
     border-radius: 0;
 }
 
+/* TECLADO */
 
 #contenedor-teclado {
     width: 100%;
-    max-width: 500px;
+    max-width: 350px; 
     margin-top: 20px;
     align-self: center;
 }
@@ -288,6 +301,7 @@ main {
     gap: 4px;
     width: 100%;
     justify-content: center;
+    min-width: 0; 
 }
 
 .tecla {
@@ -319,14 +333,14 @@ main {
 }
 
 .tecla.especial {
-    flex: 1.5;
+    /* Enter y Backspace */
     font-size: 0.8em;
     color: var(--color-blanco);
 }
 
 .tecla.backspace-key {
     background-color: var(--color-gris-medio);
-    flex: 1.2;
+    flex: 1.5; 
 }
 
 .tecla.backspace-key:hover {
@@ -342,12 +356,14 @@ main {
 .tecla.enter-key {
     background-color: var(--color-primario);
     color: var(--color-blanco);
-    flex: 1.8;
+    flex: 1.5; 
 }
 
 .tecla.enter-key:hover {
     background-color: #128B41;
 }
+
+/* ESTADOS TECLADO */
 
 .tecla.estado-V {
     background-color: var(--color-primario);
@@ -364,7 +380,7 @@ main {
     color: var(--color-blanco);
 }
 
-/*footer*/
+/* Pie de página */
 footer {
     display: flex;
     align-items: center;
@@ -399,15 +415,20 @@ footer {
     justify-content: center;
 }
 
-footer img {
+/* Iconos redes (FontAwesome) */
+footer i {
     width: 30px;
     height: 30px;
     cursor: pointer;
     transition: transform 0.2s;
     margin: 0;
+    font-size: 1.4em; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-footer img:hover {
+footer i:hover {
     transform: scale(1.1);
 }
 
@@ -416,12 +437,17 @@ footer img:hover {
     font-size: 0.7em;
 }
 
-/*media queries*/
+
+/* ============================================== */
+/* Media Queries: para que se vea bien en todos lados */
+/* ============================================== */
+
+/* Tabletas y Escritorio pequeño (768px+) */
 @media (min-width: 768px) {
 
     main {
         padding: 30px 30px;
-        max-width: 1000px;
+        max-width: 1000px; 
         width: 90%;
         margin: 0 auto;
         background-color: var(--color-blanco);
@@ -433,6 +459,7 @@ footer img:hover {
         max-width: 500px;
     }
 
+    /* Celdas mas grandes */
     .celda {
         width: 65px;
         height: 65px;
@@ -453,6 +480,11 @@ footer img:hover {
         height: 45px;
         font-size: 1em;
     }
+    
+    .tecla.enter-key,
+    .tecla.backspace-key {
+        flex: 1.3; 
+    }
 
     footer {
         min-height: 70px;
@@ -463,124 +495,50 @@ footer img:hover {
         font-size: 0.9em;
     }
 
-    footer img {
+    footer i { 
         width: 40px;
         height: 40px;
+        font-size: 1.8em; 
+    }
+}
+
+/* Pantallas grandes (1200px+) */
+@media (min-width: 1200px) {
+
+    main {
+        max-width: 1200px; 
+        padding: 40px 40px;
     }
 
-    /* --- ESTILOS DEL MODAL DE BIENVENIDA --- */
-
-    .modal {
-        /* Oculto por defecto, se muestra con JS */
-        display: none; 
-        position: fixed; /* Mantiene la posición aunque se haga scroll */
-        z-index: 1000; /* Asegura que esté por encima de todo */
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto; /* Permite scroll si el contenido es muy grande */
-        background-color: rgba(0,0,0,0.6); /* Fondo semi-transparente oscuro */
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        box-sizing: border-box;
+    #contenedor-juego {
+        max-width: 600px; 
+        margin-bottom: 25px;
     }
 
-    .modal-contenido {
-        background-color: var(--color-blanco);
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        max-width: 400px;
-        width: 90%;
-        text-align: center;
-        animation: fadeIn 0.3s ease-out;
+    .celda {
+        width: 75px; 
+        height: 75px;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
+    .letra-display {
+        font-size: 2.2em;
     }
 
-    .modal-contenido h2 {
-        color: var(--color-primario);
-        margin-top: 0;
-        font-size: 1.5em;
-        border-bottom: 2px solid var(--color-gris-medio);
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+    #tiempo-global {
+        font-size: 1.4em;
     }
 
-    .modal-contenido p, .modal-contenido ul {
-        text-align: left;
-        color: #444;
-        font-size: 1em;
-        line-height: 1.5;
+    #contenedor-teclado {
+        max-width: 700px;
+        margin-top: 30px;
     }
-
-    .modal-contenido ul {
-        list-style-type: none;
-        padding-left: 0;
-        margin-bottom: 20px;
-    }
-
-    .modal-contenido li {
-        margin-bottom: 8px;
-        padding-left: 20px;
-        position: relative;
-    }
-
-    /* Estilos para los ejemplos de colores en el pop-up */
-    .estado-V-ejemplo {
-        font-weight: bold;
-        color: var(--color-primario);
-    }
-
-    .estado-A-ejemplo {
-        font-weight: bold;
-        color: var(--color-secundario);
-    }
-
-    .estado-R-ejemplo {
-        font-weight: bold;
-        color: var(--color-rojo);
-    }
-
-    #boton-iniciar-juego {
-        background-color: var(--color-primario);
-        color: var(--color-blanco);
-        border: none;
-        padding: 10px 20px;
+    
+    .tecla {
+        height: 50px; 
         font-size: 1.1em;
-        font-weight: bold;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-top: 15px;
-        transition: background-color 0.2s, transform 0.1s;
     }
-
-    #boton-iniciar-juego:hover {
-        background-color: #128B41;
-        transform: scale(1.02);
+    
+    .info-derechos p {
+        font-size: 1em;
     }
-
-    /* Fin Estilos Modal */
-
-    /* Estilos de ocultación inicial para el juego */
-    #contenedor-juego, #contenedor-teclado {
-        /* Lo usamos para que el JS pueda ocultar esto mientras carga la palabra */
-        display: block; 
-    }
-
-    /* Media Query para pantallas grandes */
-    @media (min-width: 768px) {
-        .modal-contenido {
-            max-width: 550px;
-            padding: 40px;
-        }
-    }
-
-
-
 }

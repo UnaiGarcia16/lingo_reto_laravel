@@ -6,55 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lingo | Unai Garcia</title>
     <link rel="stylesheet" href="{{ asset('css/reto_lingo.css') }}">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
+
 </head>
 
 <body>
-    <div id="modal-bienvenida" class="modal">
-        <div class="modal-contenido">
-            <h2>¡Bienvenido a LINGO! 🟢🟡🔴</h2>
-            <p><strong>El objetivo es adivinar la palabra de 5 letras en 5 intentos.</strong></p>
-            
-            <p>Después de cada intento, el color de las celdas te indicará qué tan cerca estás:</p>
-            <ul>
-                <li><strong><span class="estado-V-ejemplo">VERDE</span>:</strong> La letra es <strong>correcta</strong> y está en la <strong>posición correcta</strong>.</li>
-                <li><strong><span class="estado-A-ejemplo">AMARILLO</span>:</strong> La letra es <strong>correcta</strong>, pero está en la <strong>posición incorrecta</strong>.</li>
-                <li><strong><span class="estado-R-ejemplo">ROJO</span>:</strong> La letra <strong>no está</strong> en la palabra objetivo.</li>
-            </ul>
-            <p><strong>NOTA:</strong> Tienes **20 segundos** para completar cada palabra. Si se acaba el tiempo, ¡pierdes el intento!</p>
-            <button id="boton-iniciar-juego">¡Empezar a Jugar!</button>
-        </div>
-    </div>
-
-    
     <header>
         <img class="logo" src="{{ asset('images/mi-logo.png') }}" alt="Logo Lingo">
+
         <h1>LINGO</h1>
-    <!-- ---------------------------------------------------------- -->
+
         <div class="imagenes">
             <a href="{{ route('ranking.index') }}" title="Estadísticas">
                 <i class="fas fa-chart-pie"></i>
             </a>
+
             <a href="#" title="Cuenta">
                 <i class="fas fa-user-circle" aria-hidden="true"></i>
             </a>
+
             <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
                 @csrf
             </form>
+
             <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <!-- 🔑 CLAVE: Usamos asset() para garantizar la ruta absoluta desde el directorio public -->
-               <i class="fas fa-sign-out-alt"></i>
+                <i class="fas fa-sign-out-alt"></i>
+
             </a>
         </div>
-    <!-- ----------------------------------------------------------- -->
+
     </header>
 
     <main>
         <span id="estado-carga">Cargando juego...</span>
-        <span id="tiempo-global">Tiempo: 00:00</span> 
-        
+        <span id="tiempo-global">Tiempo: 00:00</span>
+
         <div id="contenedor-juego">
             <div id="contenedor-superior">
                 <div id="tablero">
@@ -95,10 +81,9 @@
                     </div>
                 </div>
             </div>
-            
+
             <div id="barra-tiempo-container">
-                <div id="barra-tiempo"></div>
-            </div>
+                <div id="barra-tiempo"></div> </div>
         </div>
 
         <div id="contenedor-teclado">
@@ -147,8 +132,6 @@
     <footer>
         <div class="redes-izq">
             <i class="fab fa-youtube" title="YouTube"></i>
-
-            <!-- Opción 1: icono de Google -->
             <i class="fab fa-google" title="Gmail"></i>
         </div>
 
@@ -165,11 +148,16 @@
     </footer>
 
     <script>
+        // Constante: N es el tamaño de la palabra (5x5 celdas)
         const N = 5;
+        // La URL para pedir la palabra del día (del servidor)
         const ENDPOINT = "http://185.60.43.155:3000/api/word/1";
+        // La URL para verificar si la palabra que pones existe en el diccionario
         const ENDPOINT_CHECK = "http://185.60.43.155:3000/api/check/";
+        // Tiempo que tienes para adivinar cada intento (20 segundos)
         const TIEMPO_MAXIMO_INTENTO = 20; // Segundos
 
+        // Objeto para guardar todas las referencias a las celdas y las letras (Letra00, Celda00, etc.)
         const posiciones = {};
         for (let i = 0; i < N; i++) {
             for (let j = 0; j < N; j++) {
@@ -178,45 +166,43 @@
             }
         }
 
+        // Objeto para guardar las referencias a las teclas del teclado virtual
         const teclas = {};
         document.querySelectorAll('.letra-key').forEach(tecla => {
             teclas[tecla.dataset.key] = tecla;
         });
 
+        // Referencias a los elementos que muestran el estado y el tiempo
         const estadoSpan = document.getElementById('estado-carga');
         const tiempoGlobalSpan = document.getElementById('tiempo-global');
-        const barraTiempo = document.getElementById('barra-tiempo'); 
-        
-        // ELEMENTOS DEL MODAL
-        const modalBienvenida = document.getElementById('modal-bienvenida');
-        const botonIniciarJuego = document.getElementById('boton-iniciar-juego');
+        const barraTiempo = document.getElementById('barra-tiempo');
+
+        // Variables de estado del juego (dónde estoy escribiendo, cuál es la palabra, si está activo, etc.)
+        let filaActual = 0; // Fila (intento) actual (0 a 4)
+        let columnaActual = 0; // Columna (letra) actual (0 a 4)
+        let palabraAdivinar = "LAPIZ"; // Palabra por defecto (por si falla el servidor)
+        let juegoActivo = false; // ¿Está el juego en marcha?
+
+        let tiempoGlobal = 0; // Tiempo total que llevas
+        let intervaloGlobal = null; // ID del contador de tiempo total
+
+        let tiempoIntentoActual = TIEMPO_MAXIMO_INTENTO; // Tiempo que queda para este intento
+        let intervaloIntento = null; // ID del contador por intento
 
 
-        let filaActual = 0;
-        let columnaActual = 0;
-        let palabraAdivinar = "LAPIZ"; 
-        let juegoActivo = false; 
-        
-        let tiempoGlobal = 0; 
-        let intervaloGlobal = null; 
-        
-        let tiempoIntentoActual = TIEMPO_MAXIMO_INTENTO;
-        let intervaloIntento = null; 
-
-
-        // Función para formatear el tiempo
+        // Función para poner el tiempo en formato MM:SS
         function formatearTiempo(totalSegundos) {
             const minutos = String(Math.floor(totalSegundos / 60)).padStart(2, '0');
             const segundos = String(totalSegundos % 60).padStart(2, '0');
             return `${minutos}:${segundos}`;
         }
 
-        // Función para actualizar la barra de tiempo
+        // Función que actualiza el ancho y el color de la barra de tiempo
         function actualizarBarraTiempo() {
             const porcentaje = (tiempoIntentoActual / TIEMPO_MAXIMO_INTENTO) * 100;
             barraTiempo.style.width = `${porcentaje}%`;
 
-            // Cambiar color de la barra
+            // Cambiar color de la barra (Verde > 50%, Amarillo > 20%, Rojo < 20%)
             barraTiempo.classList.remove('barra-verde', 'barra-amarilla', 'barra-roja');
             if (porcentaje > 50) {
                 barraTiempo.classList.add('barra-verde');
@@ -227,16 +213,16 @@
             }
         }
 
-        // Función para detener los contadores al finalizar el juego
+        // Función para parar todos los contadores cuando el juego acaba (ganas o pierdes)
         function finalizarJuego() {
             juegoActivo = false;
             clearInterval(intervaloGlobal);
-            clearInterval(intervaloIntento); 
+            clearInterval(intervaloIntento);
             barraTiempo.style.width = '0%';
-            barraTiempo.className = '';
+            barraTiempo.className = ''; // Quitar colores
         }
 
-        // Contador de tiempo global 
+        // Empieza el contador de tiempo TOTAL de la partida
         function iniciarContadorGlobal() {
             if (intervaloGlobal) clearInterval(intervaloGlobal);
             tiempoGlobal = 0;
@@ -247,92 +233,85 @@
             }, 1000);
         }
 
-        // Contador de tiempo por intento (20 segundos)
+        // Reinicia o empieza el contador de tiempo para CADA intento (los 20 segundos)
         function reiniciarContadorIntento() {
-            clearInterval(intervaloIntento); 
+            clearInterval(intervaloIntento);
             if (!juegoActivo) return;
 
-            tiempoIntentoActual = TIEMPO_MAXIMO_INTENTO; 
-            actualizarBarraTiempo();
+            tiempoIntentoActual = TIEMPO_MAXIMO_INTENTO;
+            actualizarBarraTiempo(); // Pone la barra al 100%
 
             intervaloIntento = setInterval(() => {
                 tiempoIntentoActual--;
-                actualizarBarraTiempo();
+                actualizarBarraTiempo(); // Actualiza el ancho y color de la barra
 
                 if (tiempoIntentoActual <= 0) {
                     clearInterval(intervaloIntento);
-                    if (juegoActivo) { 
+                    if (juegoActivo) {
                         estadoSpan.textContent = `¡Tiempo agotado! La palabra del intento ${filaActual + 1} se salta.`;
-                        saltarIntento();
+                        saltarIntento(); // Pasa a la siguiente fila
                     }
                 }
             }, 1000);
         }
 
-        // Función para saltar la fila actual (si se agota el tiempo)
+        // Lo que pasa cuando se te acaba el tiempo en una fila: se considera un intento fallido
         function saltarIntento() {
             if (!juegoActivo) return;
 
-            // 1. Borrar letras sin validar y cambiar el estilo a "perdido"
+            // 1. Limpiar la fila y ponerla como "perdida" visualmente
             for (let j = 0; j < N; j++) {
                 let letraSpan = posiciones[`${filaActual},${j}`];
                 let celdaDiv = posiciones[`Celda${filaActual}${j}`];
-                
-                // Borrar la letra
-                letraSpan.textContent = '';
-                
-                // Quitar clases activas y de estado
+
+                letraSpan.textContent = ''; // Borrar la letra
                 celdaDiv.classList.remove('activa', 'estado-V', 'estado-A', 'estado-R', 'estado-perdido', 'estado-R-diccionario');
-                
-                // APLICAR LA CLASE DE ESTADO PERDIDO/AGOTADO
-                celdaDiv.classList.add('estado-perdido'); 
+                celdaDiv.classList.add('estado-perdido'); // Clase para el estilo de "fallo por tiempo"
             }
-            
+
             // 2. Avanzar al siguiente intento
             filaActual++;
             columnaActual = 0;
-            
+
             if (filaActual >= N) {
-                // LÓGICA DE DERROTA POR TIEMPO AGOTADO EN EL ÚLTIMO INTENTO
+                // Si ya no quedan intentos, ¡pierdes!
                 estadoSpan.textContent = `¡Juego Terminado! Has perdido por falta de tiempo. La palabra era: ${palabraAdivinar} 💀`;
                 alert(`Has perdido por falta de tiempo. La palabra era: ${palabraAdivinar} 💀`);
                 finalizarJuego();
             } else {
-                // 3. Si aún quedan intentos, se reinicia el contador y el estilo de la nueva fila.
-                reiniciarContadorIntento(); 
+                // Si aún quedan intentos, reiniciar el tiempo para la nueva fila
+                reiniciarContadorIntento();
                 actualizarEstiloFilaActual();
             }
         }
 
-        // Función que realmente inicia el juego (llamada al hacer clic en el botón)
+        // Función que realmente pone en marcha los contadores y el tablero
         function iniciarJuego() {
             if (!juegoActivo) return;
 
-            // 1. Ocultar el modal
-            modalBienvenida.style.display = 'none';
-
-            // 2. Iniciar contadores y juego
+            // 1. Iniciar contadores y estado inicial
             estadoSpan.textContent = '¡Juego listo! ¡Adivina la palabra!';
-            iniciarContadorGlobal(); 
-            reiniciarContadorIntento(); 
+            iniciarContadorGlobal(); // Empieza el tiempo total
+            reiniciarContadorIntento(); // Empieza el tiempo por intento
             columnaActual = 0;
-            // Marcar la primera celda de la primera fila como activa
+            // Pone el foco visual en la primera celda
             actualizarEstiloFilaActual();
         }
 
 
-        // Funcion para arrancar la pagina y la funcion asincrona para cargar la pablra
+        // Función que pide la palabra al servidor ANTES de que empiece el juego
         async function cargarPalabraEIniciarJuego() {
             estadoSpan.textContent = 'Cargando palabra del servidor...';
             tiempoGlobalSpan.textContent = 'Tiempo: --:--';
-            barraTiempo.style.width = '100%'; 
-            
-            // Ocultar juego mientras carga
+            barraTiempo.style.width = '100%';
+
+            // Esconder el juego mientras carga para que no se vea feo
             document.getElementById('contenedor-juego').style.display = 'none';
             document.getElementById('contenedor-teclado').style.display = 'none';
 
 
             try {
+                // Hacemos la petición a la API para conseguir la palabra
                 const resp = await fetch(ENDPOINT);
                 if (!resp.ok) {
                     throw new Error(`Respuesta no exitosa: ${resp.status}`);
@@ -340,46 +319,43 @@
                 const data = await resp.json();
                 const palabra = (data.word || "").toUpperCase();
 
+                // Comprobamos que la palabra sea válida (5 letras y solo letras)
                 if (palabra.length !== N || !/^[A-ZÑ]+$/.test(palabra)) {
                     console.warn(`Palabra recibida ("${palabra}") no válida o no tiene ${N} letras. Usando palabra por defecto.`);
                 } else {
-                    palabraAdivinar = palabra;
+                    palabraAdivinar = palabra; // Guardamos la palabra real
                 }
 
                 // 1. Marcar el juego como "listo"
-                juegoActivo = true; 
-                estadoSpan.textContent = 'Palabra cargada. Esperando inicio...';
+                juegoActivo = true;
+                estadoSpan.textContent = 'Palabra cargada. Iniciando juego...';
 
             } catch (error) {
+                // Si falla la conexión o la API
                 console.error("Error al cargar la palabra:", error);
                 estadoSpan.textContent = `Error al cargar. Usando palabra por defecto`;
-                palabraAdivinar = "LAPIZ"; // Asegurar una palabra por defecto
-                juegoActivo = true; 
+                palabraAdivinar = "LAPIZ"; // Aseguramos que haya una palabra
+                juegoActivo = true; // Permite iniciar el juego con la palabra por defecto
             }
-            
-            // 2. Mostrar el juego y el modal
+
+            // 2. Mostrar el juego (ya con la palabra cargada)
             document.getElementById('contenedor-juego').style.display = 'block';
             document.getElementById('contenedor-teclado').style.display = 'block';
-            modalBienvenida.style.display = 'flex'; // Mostrar el pop-up
 
-            // Evento para iniciar el juego al hacer clic en el botón del modal
-            botonIniciarJuego.addEventListener('click', iniciarJuego);
+            // 3. Empezar a jugar
+            iniciarJuego();
         }
 
 
-        // Funcion para aplicar/quitar la clase 'activa' en la fila actual. 
-        // Esto mantiene el fondo blanco en las letras escritas y el borde en la posición actual.
+        // Pone o quita el estilo 'activa' (fondo blanco/borde) a la celda donde está el cursor
         function actualizarEstiloFilaActual() {
             if (filaActual >= N) return;
-            
+
             for (let j = 0; j < N; j++) {
                 let celdaDiv = posiciones[`Celda${filaActual}${j}`];
                 let celdaSpan = posiciones[`${filaActual},${j}`];
 
-                // Limpiar clases de estado de intentos previos (si las hubiera, aunque no debería)
-                celdaDiv.classList.remove('estado-V', 'estado-A', 'estado-R', 'estado-perdido', 'estado-R-diccionario');
-
-                // Las celdas con texto o la celda actual del cursor deben estar activas (fondo blanco).
+                // Las celdas con texto o la celda actual del cursor deben tener el fondo claro ('activa')
                 if (celdaSpan.textContent.length > 0 || (j === columnaActual && columnaActual < N)) {
                     celdaDiv.classList.add('activa');
                 } else {
@@ -389,51 +365,57 @@
         }
 
 
+        // Coge todas las letras de la fila actual y las une para formar la palabra
         function obtenerPalabraFila(fila) {
             let palabraFila = "";
             for (let j = 0; j < N; j++) {
                 let letra = posiciones[`${fila},${j}`].textContent;
                 if (letra === '') {
-                    return ""; 
+                    return ""; // Devuelve vacío si la palabra no está completa
                 }
                 palabraFila += letra;
             }
             return palabraFila.toUpperCase();
         }
 
+        // Introduce una letra en la celda actual y mueve el cursor a la derecha
         function mover(letra) {
-            if (!juegoActivo || filaActual >= N || columnaActual >= N) return;
+            if (!juegoActivo || filaActual >= N || columnaActual >= N) return; // Si el juego no va o la fila está llena, no hace nada
+
             if (columnaActual === N) return;
 
             let celdaSpan = posiciones[`${filaActual},${columnaActual}`];
-            
+
             celdaSpan.textContent = letra;
-            columnaActual++;
-            
+            columnaActual++; // Mueve el cursor a la siguiente celda
+
             actualizarEstiloFilaActual();
         }
 
+        // Borra la última letra y mueve el cursor a la izquierda
         function borrar() {
-            if (!juegoActivo || filaActual >= N || columnaActual === 0) return; 
-            
-            columnaActual--;
-            
+            if (!juegoActivo || filaActual >= N || columnaActual === 0) return; // Si el juego no va o no hay nada que borrar
+
+            columnaActual--; // Mueve el cursor hacia atrás
+
             let celdaSpan = posiciones[`${filaActual},${columnaActual}`];
-            
-            celdaSpan.textContent = '';
-            
+
+            celdaSpan.textContent = ''; // Borra el contenido de la celda
+
             actualizarEstiloFilaActual();
         }
 
+        // Pinta la tecla del teclado virtual con el color (V/A/R) que le toque.
         function actualizarTeclado(letra, nuevoEstado) {
             const teclaElemento = teclas[letra];
             if (!teclaElemento) return;
 
+            // Lógica para que el color 'V' (Verde) gane a 'A' (Amarillo), y 'A' gane a 'R' (Rojo)
             if (teclaElemento.classList.contains('estado-V')) return;
             if (nuevoEstado === 'A' && teclaElemento.classList.contains('estado-A')) return;
             if (nuevoEstado === 'R' && (teclaElemento.classList.contains('estado-A') || teclaElemento.classList.contains('estado-V'))) return;
 
-            teclaElemento.classList.remove('estado-A', 'estado-R');
+            teclaElemento.classList.remove('estado-A', 'estado-R'); // Quita colores anteriores (si es necesario)
             if (nuevoEstado === 'V') {
                 teclaElemento.classList.add('estado-V');
             } else if (nuevoEstado === 'A') {
@@ -442,42 +424,42 @@
                 teclaElemento.classList.add('estado-R');
             }
         }
-        
+
         /**
-         * Función para verificar la palabra en el diccionario remoto.
-         * @param {string} palabra La palabra a verificar.
-         * @returns {boolean} True si existe en el diccionario, False si no.
+         * Función para ver si la palabra existe en la base de datos (Diccionario).
+         * @param {string} palabra La palabra que el usuario ha escrito.
+         * @returns {boolean} True si está, False si no.
          */
         async function verificarPalabraEnDiccionario(palabra) {
             try {
                 estadoSpan.textContent = 'Verificando palabra...';
                 const url = `${ENDPOINT_CHECK}${palabra.toLowerCase()}`;
-                
+
                 const resp = await fetch(url);
                 if (!resp.ok) {
                     throw new Error(`Error al verificar: ${resp.status}`);
                 }
                 const data = await resp.json();
-                estadoSpan.textContent = '¡Juego listo! ¡Adivina la palabra!'; 
+                estadoSpan.textContent = '¡Juego listo! ¡Adivina la palabra!'; // Restaurar estado
 
-                return data.exists;
+                return data.exists; // Devuelve si existe o no
             } catch (error) {
                 console.error("Error en la verificación del diccionario:", error);
-                // Si hay un error de conexión, se asume que la palabra es válida para no penalizar
-                // por un error de servidor. Si prefieres penalizar, cambia 'true' a 'false'.
+                // Si la conexión falla, asumimos que es válida para no fastidiar al jugador
                 estadoSpan.textContent = 'Error de conexión. Continuando validación...';
-                return true; 
+                return true;
             }
         }
 
 
-        // FUNCIÓN VALIDAR MODIFICADA
+        // FUNCIÓN PRINCIPAL: Se llama al darle a ENTER. Comprueba si la palabra es correcta.
         async function validar() {
+            // No validar si el juego no está activo o la palabra no está completa
             if (!juegoActivo || filaActual >= N || columnaActual < N) return;
 
             let palabraIntento = obtenerPalabraFila(filaActual);
 
-            // Detener el contador de intento antes de procesar
+            // Parar el contador por intento mientras procesamos
             clearInterval(intervaloIntento);
             barraTiempo.style.width = '0%';
 
@@ -485,137 +467,141 @@
             const existeEnDiccionario = await verificarPalabraEnDiccionario(palabraIntento);
 
             if (!existeEnDiccionario) {
-                // *** LÓGICA DE INTENTO PERDIDO POR DICCIONARIO ***
-                
-                // 1a. Marcar todas las celdas como ROJAS (o 'estado-R-diccionario' para diferenciar)
+                // *** LÓGICA DE INTENTO PERDIDO POR NO ESTAR EN EL DICCIONARIO ***
+
+                // 1a. Marcar todas las celdas como ROJAS especiales (no válida)
                 for (let j = 0; j < N; j++) {
                     let celdaDiv = posiciones[`Celda${filaActual}${j}`];
                     let letraIntento = palabraIntento[j];
-                    
+
                     celdaDiv.classList.remove('activa', 'estado-V', 'estado-A', 'estado-R', 'estado-perdido');
-                    celdaDiv.classList.add('estado-R-diccionario');
-                    
-                    // 1b. Actualizar teclado a ROJO (R)
+                    celdaDiv.classList.add('estado-R-diccionario'); // Poner clase de 'rojo de diccionario'
+
+                    // 1b. Actualizar teclado a ROJO
                     actualizarTeclado(letraIntento, 'R');
                 }
-                
-                // 2. Notificar estado, pero SIN ALERT
+
+                // 2. Notificar error y avisar de la pérdida de intento
                 estadoSpan.textContent = `Palabra no encontrada. Intento ${filaActual + 1} perdido.`;
                 setTimeout(() => {
                     estadoSpan.textContent = '¡Juego listo! ¡Adivina la palabra!';
                 }, 2000);
-                
-                // 3. Saltar al siguiente intento
+
+                // 3. Pasar al siguiente intento
                 filaActual++;
                 columnaActual = 0;
 
                 if (filaActual >= N) {
                     estadoSpan.textContent = `¡Juego Terminado! Has perdido. La palabra era: ${palabraAdivinar} 💀`;
-                    finalizarJuego(); 
+                    finalizarJuego(); // ¡Juego acabado!
                 } else {
-                    reiniciarContadorIntento(); 
+                    reiniciarContadorIntento(); // Reiniciar tiempo para la nueva fila
                     actualizarEstiloFilaActual();
                 }
-                return; // Finalizar la función si la palabra no es válida
+                return; // Terminar aquí si la palabra no es válida
             }
-            // FIN VALIDACIÓN DICCIONARIO - Si llega aquí, la palabra es válida y se procesa el intento normal.
+            // FIN VALIDACIÓN DICCIONARIO - Si llegamos aquí, la palabra es real.
 
-            // --- LÓGICA DE VALIDACIÓN NORMAL (Palabra válida) ---
+            // --- LÓGICA DE VALIDACIÓN NORMAL (Comprobar colores) ---
 
             const palabraObjetivo = palabraAdivinar.toUpperCase();
             const intentoArray = palabraIntento.split('');
 
-            let estadosCeldas = new Array(N).fill('R');
+            let estadosCeldas = new Array(N).fill('R'); // Empezamos asumiendo que todas son Rojas
             let objetivoRestante = {};
 
-            // 1. Contar letras restantes del objetivo (excluyendo verdes)
+            // 1. PRIMERA PASADA: Identificar y marcar VERDES (posición correcta)
             for (let i = 0; i < N; i++) {
                 const letra = palabraObjetivo[i];
                 if (intentoArray[i] !== letra) {
+                    // Si no es Verde, se cuenta como letra restante para buscar Amarillos
                     objetivoRestante[letra] = (objetivoRestante[letra] || 0) + 1;
                 } else {
-                    estadosCeldas[i] = 'V'; // Marcar Verde (acierto)
+                    estadosCeldas[i] = 'V'; // ¡Verde!
                 }
             }
 
             let palabraAcertada = true;
 
-            // 2. Marcar Amarillas y Rojas
+            // 2. SEGUNDA PASADA: Identificar y marcar AMARILLAS (letra correcta en posición incorrecta) y ROJAS
             for (let j = 0; j < N; j++) {
-                if (estadosCeldas[j] !== 'V') {
+                if (estadosCeldas[j] !== 'V') { // Solo si no es Verde
                     const letraIntento = intentoArray[j];
+                    palabraAcertada = false; // Como no es todo Verde, la palabra no está acertada
 
                     if (objetivoRestante[letraIntento] > 0) {
-                        estadosCeldas[j] = 'A'; // Marcar Amarilla (presente)
-                        objetivoRestante[letraIntento]--;
+                        estadosCeldas[j] = 'A'; // ¡Amarillo!
+                        objetivoRestante[letraIntento]--; // Restamos una letra del conteo restante
                     } else {
-                        estadosCeldas[j] = 'R'; // Marcar Roja (no presente)
+                        estadosCeldas[j] = 'R'; // ¡Rojo! (No está la letra)
                     }
-                    palabraAcertada = false;
                 }
             }
 
-            // 3. Actualizar la interfaz (Board y Teclado)
+            // 3. Actualizar la interfaz (Poner los colores en el tablero y teclado)
             for (let j = 0; j < N; j++) {
                 const letraIntento = intentoArray[j];
                 const estado = estadosCeldas[j];
                 let celdaDiv = posiciones[`Celda${filaActual}${j}`];
-                
-                celdaDiv.classList.remove('activa', 'estado-V', 'estado-A', 'estado-R', 'estado-perdido', 'estado-R-diccionario');
 
+                // Limpiar clases y aplicar la nueva
+                celdaDiv.classList.remove('activa', 'estado-V', 'estado-A', 'estado-R', 'estado-perdido', 'estado-R-diccionario');
                 celdaDiv.classList.add(`estado-${estado}`);
 
+                // Poner el color en la tecla del teclado virtual
                 actualizarTeclado(letraIntento, estado);
             }
 
             // 4. Lógica de avance/fin de juego
             if (palabraAcertada) {
+                // ¡HAS GANADO!
                 estadoSpan.textContent = `Has acertado en ${filaActual + 1} intentos. Tiempo total: ${formatearTiempo(tiempoGlobal)} 🎉`;
                 alert(`Has acertado, felicidades. Tiempo total: ${formatearTiempo(tiempoGlobal)}`);
-                finalizarJuego(); 
+                finalizarJuego();
             } else {
+                // Pasar al siguiente intento
                 filaActual++;
                 columnaActual = 0;
-                
+
                 if (filaActual >= N) {
+                    // ¡HAS PERDIDO! (Último intento fallido)
                     estadoSpan.textContent = `¡Juego Terminado! La palabra era: ${palabraObjetivo} 💀`;
                     alert(`Has perdido. La palabra era: ${palabraObjetivo}`);
-                    finalizarJuego(); 
+                    finalizarJuego();
                 } else {
-                    reiniciarContadorIntento(); 
+                    // Reiniciar el contador y el foco para la nueva fila
+                    reiniciarContadorIntento();
                     actualizarEstiloFilaActual();
                 }
             }
         }
 
 
-        // event listeners para el los teclados
-
-        // teclado de la pantalla
+        // Escuchadores de eventos para los botones del teclado VIRTUAL
         document.querySelectorAll('.letra-key').forEach(button => {
-            button.addEventListener('click', () => mover(button.dataset.key));
+            button.addEventListener('click', () => mover(button.dataset.key)); // Pone la letra al hacer click
         });
-        document.getElementById('Tecla_Enter').addEventListener('click', validar);
-        document.getElementById('Tecla_Backspace').addEventListener('click', borrar);
+        document.getElementById('Tecla_Enter').addEventListener('click', validar); // Llama a validar
+        document.getElementById('Tecla_Backspace').addEventListener('click', borrar); // Llama a borrar
 
 
-        // teclado físico
+        // Escuchador de eventos para el teclado FÍSICO
         document.addEventListener('keydown', (e) => {
-            if (!juegoActivo || modalBienvenida.style.display === 'flex') return;
+            if (!juegoActivo) return; // Solo funciona si el juego está activo
 
             let key = e.key.toUpperCase();
-            
+
             if (key === 'ENTER') {
-                validar(); 
+                validar(); // Si pulsas Enter
             } else if (key === 'BACKSPACE') {
-                borrar();
+                borrar(); // Si pulsas Borrar
             } else if (key.length === 1 && key.match(/^[A-ZÑ]$/)) {
-                mover(key);
+                mover(key); // Si pulsas una letra
             }
         });
 
-        //Iniciar la pagina
-        cargarPalabraEIniciarJuego(); 
+        // Esto arranca todo el proceso al cargar la página: primero carga la palabra y luego el juego
+        cargarPalabraEIniciarJuego();
     </script>
 
 </body>
